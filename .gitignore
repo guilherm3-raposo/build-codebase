@@ -2,3 +2,5 @@
 config.json
 data.json
 keys
+build.log
+logs
