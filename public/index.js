@@ -5,11 +5,21 @@ let info = null;
 let lastMessageId = -1;
 let busy = false;
 
+let retries = 0;
+
 dataLoop();
 
 async function dataLoop() {
     while (true) {
-        await getData();
+        if (retries > 4) {
+            retries = 0;
+            await new Promise((res) => setTimeout(res, 5000));
+        }
+        try {
+            await getData();
+        } catch (error) {
+            retries++;
+        }
         await new Promise(waitASecond);
     }
 }
