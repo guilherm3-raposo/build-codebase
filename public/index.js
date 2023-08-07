@@ -20,12 +20,8 @@ async function dataLoop() {
         } catch (error) {
             retries++;
         }
-        await new Promise(waitASecond);
+        await new Promise((res) => setTimeout(res, 3000));
     }
-}
-
-async function waitASecond(resolve, reject) {
-    setTimeout(resolve, 1000);
 }
 
 async function getData() {
@@ -38,6 +34,8 @@ async function getData() {
 }
 
 async function build(project) {
+    setButtonsDisabledStatus(true);
+
     return fetch("/deploy/build", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -46,6 +44,8 @@ async function build(project) {
 }
 
 function handleData(data) {
+    busy = false;
+
     var dataArr = [];
     let info;
     for (const key in data) {
@@ -59,7 +59,7 @@ function handleData(data) {
         elem = dataArr[idx];
         if (elem.status != "IDLE") {
             busy = true;
-            setButtonsStatus(true);
+            setButtonsDisabledStatus(true);
         }
         if (selectors[elem.name]) {
             updateRow(elem);
@@ -70,7 +70,7 @@ function handleData(data) {
     }
 
     if (!busy) {
-        setButtonsStatus(false);
+        setButtonsDisabledStatus(false);
     }
 }
 
@@ -108,7 +108,7 @@ function buildRow(data) {
 
     const lastBuildDurationTd = document.createElement("td");
     const lastBuildDuration = document.createElement("span");
-    lastBuildDuration.innerHTML = data.lastBuildDuration;
+    lastBuildDuration.innerHTML = data.lastBuildDuration + "s";
     lastBuildDurationTd.appendChild(lastBuildDuration);
     row.appendChild(lastBuildDurationTd);
 
@@ -136,7 +136,7 @@ function updateRow(data) {
     selectors[key].lastBuildDuration.innerHTML = data.lastBuildDuration;
 }
 
-function setButtonsStatus(disabled) {
+function setButtonsDisabledStatus(disabled) {
     for (const key in selectors) {
         if (disabled) {
             selectors[key].buildBtn.setAttribute("disabled", "");
