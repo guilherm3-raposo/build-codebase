@@ -1,0 +1,298 @@
+:root {
+    --c1: #eee;
+    --c2: #ddd;
+    --color: hsl(232, 22%, 5%);
+    --input-bg: #fff;
+    --input-height: 36px;
+    --btn-bg: rgb(61, 102, 216);
+    --btn-color: #fff;
+}
+
+.dark:root {
+    --c1: #161d47;
+    --c2: #252836;
+    --color: rgb(88, 95, 139);
+    --input-bg: #16192a;
+    /* --btn-bg: #5169cd; */
+    /* --btn-color: var(--color); */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+*:not(input, textarea) {
+    user-select: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    margin: 0;
+    font-family: Helvetica, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(45deg, var(--c1), var(--c2));
+    color: var(--color);
+    font-family: Verdana;
+}
+
+table {
+    width: 100%;
+    padding: 20px;
+}
+
+tr {
+    min-height: 36px;
+}
+
+th {
+    text-transform: uppercase;
+}
+
+td:first-child {
+    font-weight: bold;
+}
+
+th:nth-child(3) {
+    width: 160px;
+}
+
+th, td {
+    text-align: left;
+    margin-left: 10px;
+}
+
+button {
+    height: var(--input-height);
+    font-weight: 600;
+    border: none;
+}
+
+button:not([disabled]) {
+    border: 1px solid var(--btn-bg);
+    background-color: var(--btn-bg);
+    color: var(--btn-color);
+}
+
+h1 {
+    font-size: 8rem;
+}
+
+h2 {
+    font-size: 6rem;
+}
+
+h3 {
+    font-size: 4rem;
+}
+
+h4 {
+    font-size: 2rem;
+}
+
+form {
+    padding: 20px;
+    box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    height: 200px;
+    background-color: rgba(0, 0, 0, .05);
+}
+
+input {
+    padding: 0 14px;
+    min-height: var(--input-height);
+    border: 1px solid var(--c1);
+    background-color: var(--input-bg);
+    color: var(--color);
+    font-size: 26px;
+}
+
+*:focus {
+    outline: rgb(61, 102, 216) solid 1px;
+}
+
+.form-input {
+    display: flex;
+    gap: 5px;
+}
+
+progress {
+    -webkit-appearance: none;
+    appearance: none;
+
+}
+
+progress::-webkit-progress-bar {
+    background-color: rgba(255, 255, 255, .2);
+    box-shadow: -2px 1px 2px rgba(0, 0, 0, 0.25) inset;
+    border-radius: 4px;
+}
+
+progress::-webkit-progress-value {
+    background: linear-gradient(60deg, #272776, #333398 50%);
+    border-radius: 4px;
+    background-size: 100%;
+    border-radius: 2px;
+    transition: .3s all ease;
+}
+
+@media only screen and (max-width: 767px) {
+    thead {
+        display: none;
+    }
+
+    tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 20px
+    }
+
+    tr {
+        display: grid;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 20px;
+        background: rgba(0, 0, 0, .1);
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            'project  project'
+            'status   actions'
+            'built    time'
+            'progress progress'
+    }
+
+    td {
+        margin: 0;
+    }
+
+    td:nth-child(1) {
+        grid-area: project;
+        font-size: 26px;
+    }
+
+    td:nth-child(2) {
+        grid-area: progress;
+    }
+
+    progress {
+        width: 100%;
+    }
+
+    td:nth-child(3) {
+        grid-area: status;
+        font-weight: bold;
+    }
+
+    td:nth-child(4) {
+        grid-area: built;
+    }
+
+    td:nth-child(5) {
+        grid-area: time;
+    }
+
+    td:nth-child(6) {
+        grid-area: actions;
+    }
+
+}
+
+
+.checkbox {
+    opacity: 0;
+    display: none;
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+}
+
+.checkbox-label {
+    width: 50px;
+    height: 26px;
+    border-radius: 50px;
+    position: relative;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+    transition: 1s background ease;
+    background-color: #cae7ff;
+}
+
+html.dark .checkbox-label {
+    background: #34277a;
+}
+
+.moon {
+    height: 16px;
+    width: 16px;
+    transform: translate(11px, -23px);
+    transition: .3s all ease-in-out;
+}
+
+html.dark .moon {
+    transform: translate(24px, 0px);
+}
+
+.moon * {
+    fill: #fde47f;
+}
+
+.sun {
+    height: 16px;
+    width: 16px;
+    transition: .3s all ease-in-out;
+    transform: translate(-24px, 0px) rotate(0deg);
+}
+
+html.dark .sun {
+    transform: translate(-11px, 23px) rotate(180deg);
+}
+
+html.dark .sun * {
+    fill: #f4d871;
+}
+
+.sun * {
+    fill: #f39c12;
+}
+
+.checkbox-label .ball {
+    background-color: rgba(255, 255, 255, .3);
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    border-radius: 50%;
+    transition: transform 0.3s linear, background .3s ease;
+}
+
+.dark .ball {
+    transform: translateX(24px);
+    background-color: rgba(0, 0, 0, .3);
+}
+
+nav {
+    display: flex;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, .3);
+}
