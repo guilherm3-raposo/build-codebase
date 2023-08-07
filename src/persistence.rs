@@ -9,7 +9,7 @@ pub struct Entry {
     #[serde(rename = "lastBuilt")]
     pub last_built: String,
     #[serde(rename = "lastBuildDuration")]
-    pub last_build_duration: String,
+    pub last_build_duration: i32,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
