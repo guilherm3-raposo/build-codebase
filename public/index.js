@@ -2,8 +2,8 @@ const tbody = document.querySelector("#tbody");
 const selectors = {};
 
 let info = null;
-let lastMessageId = -1;
 let busy = false;
+let backoff = false;
 
 let retries = 0;
 
@@ -11,6 +11,10 @@ dataLoop();
 
 async function dataLoop() {
     while (true) {
+        if (backoff) {
+            await new Promise((res) => setTimeout(res, 3000));
+            continue;
+        }
         if (retries > 4) {
             retries = 0;
             await new Promise((res) => setTimeout(res, 5000));
@@ -20,13 +24,13 @@ async function dataLoop() {
         } catch (error) {
             retries++;
         }
-        await new Promise((res) => setTimeout(res, 3000));
+        await new Promise((res) => setTimeout(res, 1000));
     }
 }
 
 async function getData() {
     try {
-        info = await (await fetch("/deploy/data")).json();
+        info = await (await fetch(`${root}/data`)).json();
         handleData(info);
     } catch (error) {
         // alert("Error getting data");
@@ -34,13 +38,20 @@ async function getData() {
 }
 
 async function build(project) {
+    backoff = true;
     setButtonsDisabledStatus(true);
 
-    return fetch("/deploy/build", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `project=${project}`,
-    });
+    try {
+        await fetch(`${root}/build`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `project=${project}`,
+        });
+    } finally {
+        setTimeout(() => {
+            backoff = false;
+        }, 1000);
+    }
 }
 
 function handleData(data) {
@@ -133,7 +144,7 @@ function updateRow(data) {
     selectors[key].progress.value = data.progress;
     selectors[key].status.innerHTML = data.status;
     selectors[key].lastBuilt.innerHTML = data.lastBuilt;
-    selectors[key].lastBuildDuration.innerHTML = data.lastBuildDuration;
+    selectors[key].lastBuildDuration.innerHTML = data.lastBuildDuration + "s";
 }
 
 function setButtonsDisabledStatus(disabled) {
