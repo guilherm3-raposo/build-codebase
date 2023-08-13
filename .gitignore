@@ -1,6 +1,8 @@
-/target
-config.json
-data.json
-keys
-build.log
+builders
+target
 logs
+keys
+config.json
+config.sh
+data.json
+build.log

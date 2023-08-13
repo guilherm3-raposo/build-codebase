@@ -7,6 +7,7 @@ use actix_web::{
     HttpServer, Responder, Result,
 };
 use serde::Deserialize;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 mod config;
 mod persistence;
@@ -17,6 +18,8 @@ lazy_static! {
     static ref CONFIG: config::Config = config::get();
 }
 
+static BUILD_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
+
 #[derive(Deserialize)]
 struct LoginForm {
     pw: String,
@@ -25,6 +28,11 @@ struct LoginForm {
 #[derive(Deserialize)]
 struct BuildForm {
     project: String,
+}
+
+#[derive(Deserialize)]
+struct DeployForm {
+    authorization: String,
 }
 
 fn redirect_forbidden() -> HttpResponse {
@@ -122,9 +130,40 @@ async fn build(request: HttpRequest, form: web::Form<BuildForm>) -> impl Respond
             .body(r#"{"reason":"INVALID_PROJECT"}"#);
     }
 
+    if BUILD_IN_PROGRESS.load(Ordering::Acquire) {
+        return HttpResponse::build(StatusCode::BAD_REQUEST)
+            .content_type("application/json; charset=utf-8")
+            .body(r#"{"reason":"BUILD_ALREADY_IN_PROGRESS"}"#);
+    }
+
+    if util::lock_build() {
+        return HttpResponse::build(StatusCode::BAD_REQUEST)
+            .content_type("application/json; charset=utf-8")
+            .body(r#"{"reason":"BUILD_ALREADY_IN_PROGRESS"}"#);
+    }
+
     util::build(form.project.clone());
 
     HttpResponse::build(StatusCode::OK).finish()
+}
+
+#[post("/deploy")]
+async fn deploy(form: web::Form<DeployForm>) -> impl Responder {
+    if !security::is_valid_token(form.authorization.clone()) {
+        return HttpResponse::Forbidden().finish();
+    }
+
+    if BUILD_IN_PROGRESS.load(Ordering::Acquire) {
+        return HttpResponse::build(StatusCode::BAD_REQUEST)
+            .content_type("application/json; charset=utf-8")
+            .body(r#"{"reason":"BUILD_ALREADY_IN_PROGRESS"}"#);
+    }
+
+    if util::deploy() {
+        return HttpResponse::Ok().finish();
+    }
+
+    HttpResponse::InternalServerError().finish()
 }
 
 #[get("/403")]
@@ -156,6 +195,7 @@ async fn main() -> std::io::Result<()> {
                 .service(data)
                 .service(do_login)
                 .service(build)
+                .service(deploy)
                 .service(forbidden)
                 .service(internal_server_error)
                 .service(fs::Files::new("/", "public").show_files_listing()),

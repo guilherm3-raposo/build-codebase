@@ -1,4 +1,4 @@
-use std::{fs::File, io::BufReader};
+use std::fs;
 
 use serde::{Deserialize, Serialize};
 
@@ -6,13 +6,11 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub authorization: String,
     pub root: String,
+    pub deploy_script: String,
     pub projects: Vec<String>,
 }
 
 pub fn get() -> Config {
-    let file = File::open("config.json").expect("CONFIG_NOT_FOUND");
-
-    let reader = BufReader::new(file);
-
-    serde_json::from_reader(reader).expect("ERROR_PARSING_CONFIG")
+    let file = fs::read_to_string("config.json").expect("CONFIG_NOT_FOUND");
+    serde_json::from_str(&file).expect("ERROR_PARSING_CONFIG")
 }
