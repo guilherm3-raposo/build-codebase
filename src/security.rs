@@ -6,7 +6,7 @@ use std::{
 };
 use uuid::Uuid;
 
-use crate::config;
+use crate::{config, CONFIG};
 
 pub fn get_keys() -> Vec<String> {
     let file = match File::open("keys") {
@@ -49,4 +49,11 @@ pub fn is_valid_token(token: String) -> bool {
     let conf = config::get();
 
     token == conf.authorization
+}
+
+pub fn authorized(token: &Option<String>) -> bool {
+    match token {
+        Some(val) => *val == CONFIG.authorization,
+        None => false,
+    }
 }

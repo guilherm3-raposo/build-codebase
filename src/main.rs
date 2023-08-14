@@ -28,6 +28,7 @@ struct LoginForm {
 #[derive(Deserialize)]
 struct BuildForm {
     project: String,
+    authorization: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -120,7 +121,7 @@ async fn data() -> Result<impl Responder> {
 
 #[post("/build")]
 async fn build(request: HttpRequest, form: web::Form<BuildForm>) -> impl Responder {
-    if !security::is_logged_in(request) {
+    if !security::is_logged_in(request) && !security::authorized(&form.authorization) {
         return redirect_forbidden();
     }
 
