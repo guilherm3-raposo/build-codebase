@@ -16,8 +16,8 @@ pub fn build(project: String) {
         env_vars: None,
         exit_on_error: true,
         input_redirection: run_script::types::IoOptions::Inherit,
-        output_redirection: run_script::types::IoOptions::Inherit,
-        print_commands: true,
+        output_redirection: run_script::types::IoOptions::Pipe,
+        print_commands: false,
         runner_args: None,
         working_directory: None,
     };
@@ -26,7 +26,6 @@ pub fn build(project: String) {
         Ok(content) => match run_script::spawn_script!(content, &options) {
             Ok(mut child) => {
                 thread::spawn(move || {
-                    let _ = child.wait();
                     match child.stderr.take() {
                         Some(stderr) => {
                             let mut buf = BufReader::new(stderr);
@@ -55,6 +54,7 @@ pub fn build(project: String) {
                         }
                         None => (),
                     };
+                    let _ = child.wait();
                     unlock_build();
                 });
             }
@@ -83,9 +83,48 @@ pub fn unlock_build() -> bool {
 pub fn deploy() -> bool {
     lock_build();
 
+    let options = ScriptOptions {
+        runner: Some(String::from("bash")),
+        env_vars: None,
+        exit_on_error: false,
+        input_redirection: run_script::types::IoOptions::Inherit,
+        output_redirection: run_script::types::IoOptions::Pipe,
+        print_commands: false,
+        runner_args: None,
+        working_directory: None,
+    };
+
     match fs::read_to_string(CONFIG.deploy_script.clone()) {
-        Ok(content) => match run_script::spawn_script!(content) {
+        Ok(content) => match run_script::spawn_script!(content, &options) {
             Ok(mut child) => {
+                match child.stderr.take() {
+                    Some(stderr) => {
+                        let mut buf = BufReader::new(stderr);
+                        let mut err = String::new();
+                        while let Ok(n) = buf.read_line(&mut err) {
+                            if n > 0 {
+                                println!("{}", err);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    None => (),
+                };
+                match child.stdout.take() {
+                    Some(stdout) => {
+                        let mut buf = BufReader::new(stdout);
+                        let mut out = String::new();
+                        while let Ok(n) = buf.read_line(&mut out) {
+                            if n > 0 {
+                                println!("{}", out);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    None => (),
+                };
                 let res = child.wait();
                 unlock_build();
                 match res {
