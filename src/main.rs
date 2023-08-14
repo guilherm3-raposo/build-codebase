@@ -157,7 +157,7 @@ async fn deploy(form: web::Form<DeployForm>) -> impl Responder {
     if BUILD_IN_PROGRESS.load(Ordering::Acquire) {
         return HttpResponse::build(StatusCode::BAD_REQUEST)
             .content_type("application/json; charset=utf-8")
-            .body(r#"{"reason":"BUILD_ALREADY_IN_PROGRESS"}"#);
+            .body(r#"{"reason":"BUILD_IN_PROGRESS"}"#);
     }
 
     if util::deploy() {
@@ -202,7 +202,7 @@ async fn main() -> std::io::Result<()> {
                 .service(fs::Files::new("/", "public").show_files_listing()),
         )
     })
-    .bind(("127.0.0.1", 46000))?
+    .bind(("127.0.0.1", CONFIG.port))?
     .run()
     .await
 }

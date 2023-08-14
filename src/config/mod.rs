@@ -8,6 +8,7 @@ pub struct Config {
     pub root: String,
     pub deploy_script: String,
     pub projects: Vec<String>,
+    pub port: u16,
 }
 
 pub fn get() -> Config {
